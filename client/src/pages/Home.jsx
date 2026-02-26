@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ConnectionTest from '../components/common/ConnectionTest';
 
 const Home = () => {
     return (
@@ -8,6 +9,10 @@ const Home = () => {
                     <h1 style={heroTitleStyle}>Welcome to CreatorHub</h1>
                     <p style={heroSubTitleStyle}>The ultimate platform for modern creators to build, share, and monetize their content.</p>
                     <Link to="/register" style={ctaButtonStyle}>Get Started Now</Link>
+
+                    <div style={{ maxWidth: '400px', margin: '2rem auto 0' }}>
+                        <ConnectionTest />
+                    </div>
                 </div>
             </section>
 
