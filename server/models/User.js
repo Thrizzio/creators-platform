@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
     {
@@ -21,13 +22,21 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Please add a password'],
             minlength: [6, 'Password must be at least 6 characters'],
-            select: false, // Do not return password in API responses by default
+            select: false,
         },
     },
     {
         timestamps: true,
     }
 );
+
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        next();
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+});
 
 const User = mongoose.model('User', userSchema);
 
