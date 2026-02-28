@@ -1,80 +1,98 @@
-const Dashboard = () => {
-    return (
-        <div className="container" style={pageStyle}>
-            <h1 style={titleStyle}>Welcome to your Dashboard</h1>
-            <p style={subTitleStyle}>Manage your content and track your performance.</p>
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { isTokenExpired } from '../utils/auth';
 
-            <div style={gridStyle}>
-                <div style={cardStyle}>
-                    <h2 style={cardTitleStyle}>Your Posts</h2>
-                    <div style={placeholderBoxStyle}>List of recent posts will appear here...</div>
-                </div>
-                <div style={cardStyle}>
-                    <h2 style={cardTitleStyle}>Create New Content</h2>
-                    <button style={actionButtonStyle}>+ New Post</button>
-                </div>
-                <div style={cardStyle}>
-                    <h2 style={cardTitleStyle}>Analytics Overview</h2>
-                    <div style={placeholderBoxStyle}>Charts and stats will appear here...</div>
-                </div>
-            </div>
-        </div>
-    );
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+
+    if (!token || isTokenExpired(token)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    if (!storedUser) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    try {
+      setUser(JSON.parse(storedUser));
+    } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login', { replace: true });
+  };
+
+  return (
+    <div className="container" style={pageStyle}>
+      <h1 style={titleStyle}>Dashboard</h1>
+      <p style={subTitleStyle}>You are logged in.</p>
+
+      <div style={cardStyle}>
+        <h2 style={cardTitleStyle}>User Info</h2>
+        <p><strong>Name:</strong> {user?.name ?? '-'}</p>
+        <p><strong>Email:</strong> {user?.email ?? '-'}</p>
+      </div>
+
+      <button type="button" onClick={handleLogout} style={buttonStyle}>
+        Logout
+      </button>
+    </div>
+  );
 };
 
 const pageStyle = {
-    padding: '40px 0'
+  padding: '40px 0',
+  maxWidth: '680px',
 };
 
 const titleStyle = {
-    fontSize: '2.25rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem'
+  fontSize: '2rem',
+  fontWeight: '700',
+  marginBottom: '0.5rem',
 };
 
 const subTitleStyle = {
-    color: 'var(--text-muted)',
-    marginBottom: '2.5rem'
-};
-
-const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '2rem'
+  color: 'var(--text-muted)',
+  marginBottom: '2rem',
 };
 
 const cardStyle = {
-    backgroundColor: 'var(--white)',
-    padding: '1.5rem',
-    borderRadius: '0.75rem',
-    border: '1px solid var(--border-color)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem'
+  backgroundColor: 'var(--white)',
+  padding: '1.5rem',
+  borderRadius: '0.75rem',
+  border: '1px solid var(--border-color)',
+  marginBottom: '1.5rem',
 };
 
 const cardTitleStyle = {
-    fontSize: '1.25rem',
-    fontWeight: '600'
+  fontSize: '1.125rem',
+  fontWeight: '600',
+  marginBottom: '1rem',
 };
 
-const placeholderBoxStyle = {
-    backgroundColor: '#f1f5f9',
-    padding: '2rem',
-    borderRadius: '0.5rem',
-    border: '2px dashed var(--border-color)',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    fontSize: '0.875rem'
-};
-
-const actionButtonStyle = {
-    backgroundColor: 'var(--primary-color)',
-    color: 'var(--white)',
-    padding: '0.75rem',
-    borderRadius: '0.5rem',
-    fontWeight: '600',
-    width: '100%'
+const buttonStyle = {
+  backgroundColor: '#b91c1c',
+  color: 'var(--white)',
+  border: 'none',
+  padding: '0.75rem 1.25rem',
+  borderRadius: '0.5rem',
+  fontWeight: '600',
+  cursor: 'pointer',
 };
 
 export default Dashboard;

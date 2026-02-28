@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/database.js';
 import userRoutes from './routes/userRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -12,26 +13,8 @@ connectDB();
 
 const app = express();
 
-/**
- * CORS Configuration
- * Why CORS is needed: Browsers block cross-origin requests by default for security. 
- * CORS allows the server to specify who can access its resources.
- * 
- * Origin: Specifies the URL of the frontend allowed to make requests.
- * Credentials: Allowed to send cookies or authorization headers with the request.
- * optionsSuccessStatus: 200 is used for legacy browser compatibility.
- * 
- * Why NOT use wildcard (*): Using * in production is dangerous as it allows ANY website 
- * to make requests to your API, potentially leading to CSRF or data leaks.
- */
-const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
 // Middleware - Applied BEFORE routes
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
@@ -46,6 +29,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error Handling Middleware (Generic)
 app.use((err, req, res, next) => {
