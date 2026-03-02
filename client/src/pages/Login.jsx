@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { isTokenExpired } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login, loading: authLoading, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,18 +12,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-
-    if (token && !isTokenExpired(token)) {
+    if (!authLoading && isAuthenticated()) {
       navigate('/dashboard', { replace: true });
-      return;
     }
-
-    if (token && isTokenExpired(token)) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
-  }, [navigate]);
+  }, [authLoading, isAuthenticated, navigate]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -73,12 +66,7 @@ const Login = () => {
         return;
       }
 
-      /**
-       * localStorage is used for persistence across refreshes.
-       * Security note: localStorage is vulnerable to XSS if malicious scripts run in your app.
-       */
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      login(data.user, data.token);
       navigate('/dashboard', { replace: true });
     } catch {
       setError('Unable to connect to the server');

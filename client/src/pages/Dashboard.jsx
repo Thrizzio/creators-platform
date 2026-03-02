@@ -1,41 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isTokenExpired } from '../utils/auth';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, logout, loading } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (!token || isTokenExpired(token)) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    if (!storedUser) {
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    try {
-      setUser(JSON.parse(storedUser));
-    } catch {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login', { replace: true });
-    }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login', { replace: true });
-  };
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
 
   return (
     <div className="container" style={pageStyle}>
@@ -48,7 +18,7 @@ const Dashboard = () => {
         <p><strong>Email:</strong> {user?.email ?? '-'}</p>
       </div>
 
-      <button type="button" onClick={handleLogout} style={buttonStyle}>
+      <button type="button" onClick={logout} style={buttonStyle}>
         Logout
       </button>
     </div>

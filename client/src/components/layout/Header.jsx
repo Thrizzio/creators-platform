@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Header = () => {
+    const { user, logout, isAuthenticated } = useAuth();
+    const authenticated = isAuthenticated();
+
     return (
         <header style={headerStyle}>
             <div className="container" style={headerContainerStyle}>
@@ -10,8 +14,22 @@ const Header = () => {
                 <nav>
                     <ul style={navListStyle}>
                         <li><Link to="/" style={linkStyle}>Home</Link></li>
-                        <li><Link to="/login" style={linkStyle}>Login</Link></li>
-                        <li><Link to="/register" style={registerButtonStyle}>Register</Link></li>
+                        {authenticated ? (
+                            <>
+                                <li><Link to="/dashboard" style={linkStyle}>Dashboard</Link></li>
+                                <li style={greetingStyle}>Hi, {user?.name}</li>
+                                <li>
+                                    <button type="button" onClick={logout} style={logoutButtonStyle}>
+                                        Logout
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li><Link to="/login" style={linkStyle}>Login</Link></li>
+                                <li><Link to="/register" style={registerButtonStyle}>Register</Link></li>
+                            </>
+                        )}
                     </ul>
                 </nav>
             </div>
@@ -57,6 +75,16 @@ const registerButtonStyle = {
     color: 'var(--white)',
     padding: '0.5rem 1.25rem',
     borderRadius: '0.5rem',
+};
+
+const greetingStyle = {
+    ...linkStyle,
+};
+
+const logoutButtonStyle = {
+    ...registerButtonStyle,
+    border: 'none',
+    cursor: 'pointer',
 };
 
 export default Header;
