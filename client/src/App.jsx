@@ -1,26 +1,14 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import PublicRoute from './components/common/PublicRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
-import { AuthProvider, useAuth } from './context/AuthContext';
-
-const ProtectedRoute = ({ children }) => {
-  const { loading, isAuthenticated } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
@@ -30,8 +18,22 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route
+              path="/login"
+              element={(
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              )}
+            />
+            <Route
+              path="/register"
+              element={(
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              )}
+            />
             <Route
               path="/dashboard"
               element={(
