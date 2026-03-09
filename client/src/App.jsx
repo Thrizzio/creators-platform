@@ -7,6 +7,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import CreatePost from './pages/CreatePost';
+import EditPost from './pages/EditPost';
 import NotFound from './pages/NotFound';
 import { AuthProvider } from './context/AuthContext';
 
@@ -39,6 +41,22 @@ function App() {
               element={(
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/create"
+              element={(
+                <ProtectedRoute>
+                  <CreatePost />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/edit/:id"
+              element={(
+                <ProtectedRoute>
+                  <EditPost />
                 </ProtectedRoute>
               )}
             />
