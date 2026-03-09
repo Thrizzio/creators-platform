@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/database.js';
 import userRoutes from './routes/userRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import postRoutes from './routes/postRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -12,22 +14,24 @@ connectDB();
 
 const app = express();
 
-// Middleware
-app.use(cors()); // Enable Cross-Origin Resource Sharing
+// Middleware - Applied BEFORE routes
+app.use(cors());
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
   res.status(200).json({
+    message: "Server is running!",
     status: 'success',
-    message: 'Server is healthy and running',
     timestamp: new Date().toISOString(),
   });
 });
 
 // API Routes
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
 
 // Error Handling Middleware (Generic)
 app.use((err, req, res, next) => {
