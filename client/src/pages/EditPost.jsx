@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../services/api';
 
 const EditPost = () => {
@@ -28,7 +29,9 @@ const EditPost = () => {
         setCategory(post?.category || '');
         setStatus(post?.status || 'draft');
       } catch (requestError) {
-        setError(requestError.message || 'Failed to load post');
+        const message = requestError.response?.data?.message || 'Something went wrong';
+        setError(message);
+        toast.error(message);
       } finally {
         setIsLoading(false);
       }
@@ -44,7 +47,9 @@ const EditPost = () => {
     setError('');
 
     if (!title.trim() || !content.trim()) {
-      setError('Title and content are required');
+      const message = !title.trim() ? 'Title is required' : 'Content is required';
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -58,9 +63,12 @@ const EditPost = () => {
         status,
       });
 
+      toast.success('Post updated successfully');
       navigate('/dashboard');
     } catch (requestError) {
-      setError(requestError.message || 'Failed to update post');
+      const message = requestError.response?.data?.message || 'Failed to update post';
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }

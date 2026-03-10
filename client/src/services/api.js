@@ -22,7 +22,15 @@ const request = async (url, options = {}) => {
 
   if (!response.ok) {
     const message = data?.message || 'Request failed';
-    throw new Error(message);
+    const error = new Error(message);
+    error.response = {
+      status: response.status,
+      data: data || {
+        success: false,
+        message,
+      },
+    };
+    throw error;
   }
 
   return data;

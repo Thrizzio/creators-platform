@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../services/api';
 
 const CreatePost = () => {
@@ -17,7 +18,9 @@ const CreatePost = () => {
     setError('');
 
     if (!title.trim() || !content.trim()) {
-      setError('Title and content are required');
+      const message = !title.trim() ? 'Title is required' : 'Content is required';
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -31,9 +34,12 @@ const CreatePost = () => {
         status,
       });
 
+      toast.success('Post created successfully');
       navigate('/dashboard', { replace: true });
     } catch (requestError) {
-      setError(requestError.message || 'Unable to connect to the server');
+      const message = requestError.response?.data?.message || 'Something went wrong';
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }

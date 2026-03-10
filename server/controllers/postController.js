@@ -1,6 +1,12 @@
 import Post from '../models/Post.js';
 
-export const createPost = async (req, res) => {
+const createError = (status, message) => {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+};
+
+export const createPost = async (req, res, next) => {
   try {
     const {
       title,
@@ -9,8 +15,12 @@ export const createPost = async (req, res) => {
       status,
     } = req.body;
 
-    if (!title?.trim() || !content?.trim()) {
-      return res.status(400).json({ message: 'Title and content are required' });
+    if (!title?.trim()) {
+      return next(createError(400, 'Title is required'));
+    }
+
+    if (!content?.trim()) {
+      return next(createError(400, 'Content is required'));
     }
 
     const post = await Post.create({
@@ -26,11 +36,11 @@ export const createPost = async (req, res) => {
       data: post,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 };
 
-export const getPosts = async (req, res) => {
+export const getPosts = async (req, res, next) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
@@ -59,21 +69,21 @@ export const getPosts = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 };
 
-export const getPostById = async (req, res) => {
+export const getPostById = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id).populate('author', 'name email');
 
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(createError(404, 'Post not found'));
     }
 
     const authorId = post.author?._id ? post.author._id.toString() : post.author.toString();
     if (authorId !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to access this post' });
+      return next(createError(403, 'You do not have permission to view this post'));
     }
 
     return res.status(200).json({
@@ -81,20 +91,20 @@ export const getPostById = async (req, res) => {
       data: post,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 };
 
-export const updatePost = async (req, res) => {
+export const updatePost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
 
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(createError(404, 'Post not found'));
     }
 
     if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this post' });
+      return next(createError(403, 'You do not have permission to modify this post'));
     }
 
     const {
@@ -127,20 +137,20 @@ export const updatePost = async (req, res) => {
       data: post,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 };
 
-export const deletePost = async (req, res) => {
+export const deletePost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
 
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(createError(404, 'Post not found'));
     }
 
     if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this post' });
+      return next(createError(403, 'You do not have permission to modify this post'));
     }
 
     await post.deleteOne();
@@ -150,6 +160,6 @@ export const deletePost = async (req, res) => {
       message: 'Post deleted successfully',
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return next(error);
   }
 };
