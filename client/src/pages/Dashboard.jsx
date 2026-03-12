@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import socket from '../services/socket';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import api from '../services/api';
 
 const Dashboard = () => {
@@ -71,6 +72,29 @@ const Dashboard = () => {
   useEffect(() => {
     fetchPosts(1);
   }, [fetchPosts]);
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error.message);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("connect_error");
+      socket.disconnect();
+    };
+  }, []);
 
   if (loading) return <div>Loading...</div>;
 
