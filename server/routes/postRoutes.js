@@ -8,12 +8,16 @@ import {
 } from '../controllers/postController.js';
 import protect from '../middleware/protect.js';
 
-const router = express.Router();
+const postRoutes = (io) => {
+  const router = express.Router();
 
-router.post('/', protect, createPost);
-router.get('/', protect, getPosts);
-router.get('/:id', protect, getPostById);
-router.put('/:id', protect, updatePost);
-router.delete('/:id', protect, deletePost);
+  router.post('/', protect, (req, res, next) => createPost(req, res, next, io));
+  router.get('/', protect, getPosts);
+  router.get('/:id', protect, getPostById);
+  router.put('/:id', protect, updatePost);
+  router.delete('/:id', protect, deletePost);
 
-export default router;
+  return router;
+};
+
+export default postRoutes;

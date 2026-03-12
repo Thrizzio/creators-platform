@@ -8,6 +8,11 @@ import postRoutes from './routes/postRoutes.js';
 import errorHandler from './middleware/errorMiddleware.js';
 import { createServer } from "http";
 import { Server } from "socket.io";
+import jwt from 'jsonwebtoken';
+</xai:function_call
+
+<xai:function_call name="edit_file">
+<parameter name="path">server/server.js
 
 // Load environment variables
 dotenv.config();
@@ -34,7 +39,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/posts', postRoutes);
+app.use('/api/posts', postRoutes(io));
 
 app.use(errorHandler);
 
@@ -49,11 +54,27 @@ const io = new Server(httpServer, {
   }
 });
 
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error("Authentication error: No token provided"));
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.data.user = decoded;
+    next();
+  } catch (err) {
+    next(new Error("Authentication error"));
+  }
+});
+
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log(
+    `User connected: ${socket.id} | Email: ${socket.data.user.email}`
+  );
 
   socket.on("disconnect", (reason) => {
-    console.log("User disconnected:", socket.id, reason);
+    console.log(`User disconnected: ${socket.id}`, reason);
   });
 });
 

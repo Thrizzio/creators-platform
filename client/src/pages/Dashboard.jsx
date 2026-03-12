@@ -88,10 +88,15 @@ const Dashboard = () => {
       console.error("Socket connection error:", error.message);
     });
 
+    socket.on("newPost", (data) => {
+      toast.success(data.message);
+    });
+
     return () => {
       socket.off("connect");
       socket.off("disconnect");
       socket.off("connect_error");
+      socket.off("newPost");
       socket.disconnect();
     };
   }, []);

@@ -6,7 +6,7 @@ const createError = (status, message) => {
   return error;
 };
 
-export const createPost = async (req, res, next) => {
+export const createPost = async (req, res, next, io) => {
   try {
     const {
       title,
@@ -29,6 +29,15 @@ export const createPost = async (req, res, next) => {
       category: category?.trim() || '',
       status: status || 'draft',
       author: req.user._id,
+    });
+
+    io.emit("newPost", {
+      message: `New post created by ${req.user.name}`,
+      post: {
+        _id: post._id,
+        title: post.title,
+        createdBy: req.user.name
+      }
     });
 
     return res.status(201).json({
