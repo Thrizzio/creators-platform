@@ -1,46 +1,39 @@
-const request = async (url, options = {}) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    ...(options.headers || {}),
-  };
+import axios from 'axios';
 
-  if (!headers['Content-Type'] && options.body) {
-    headers['Content-Type'] = 'application/json';
-  }
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || '',
+});
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-  const contentType = response.headers.get('content-type') || '';
-  const data = contentType.includes('application/json') ? await response.json() : null;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  if (!response.ok) {
-    const message = data?.message || 'Request failed';
-    const error = new Error(message);
-    error.response = {
-      status: response.status,
-      data: data || {
-        success: false,
-        message,
-      },
-    };
-    throw error;
-  }
-
-  return data;
+const apiClient = {
+  get: async (url, config = {}) => {
+    const response = await api.get(url, config);
+    return response.data;
+  },
+  post: async (url, body, config = {}) => {
+    const response = await api.post(url, body, config);
+    return response.data;
+  },
+  put: async (url, body, config = {}) => {
+    const response = await api.put(url, body, config);
+    return response.data;
+  },
+  delete: async (url, config = {}) => {
+    const response = await api.delete(url, config);
+    return response.data;
+  },
 };
 
-const api = {
-  get: (url) => request(url),
-  post: (url, body) => request(url, { method: 'POST', body: JSON.stringify(body) }),
-  put: (url, body) => request(url, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: (url) => request(url, { method: 'DELETE' }),
-};
-
-export default api;
+export default apiClient;

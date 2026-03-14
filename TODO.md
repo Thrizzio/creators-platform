@@ -1,15 +1,31 @@
-# Real-time Notification System Implementation
+# RBAC Implementation TODO
 
-## Status: ✅ Complete
+## Steps to Complete:
 
-### Planned Steps:
-1. [✅] **Backend: Update server/server.js** - Add JWT auth middleware for Socket.io, pass io to postRoutes
-2. [✅] **Backend: Refactor server/routes/postRoutes.js** - Accept io parameter, wrap createPost to pass io
-3. [✅] **Backend: Update server/controllers/postController.js** - Add io.emit('newPost') after post creation
-4. [✅] **Frontend: Update client/src/services/socket.js** - Add JWT token to socket auth
-5. [✅] **Frontend: Update client/src/pages/Dashboard.jsx** - Add socket.on('newPost') listener with toast
-6. [✅] **Test**: Ready - Login 2 tabs, create post → real-time toast + server logs
-7. [✅] **Cleanup**: All changes minimal, production-ready, no new deps needed
+### 1. ✅ Update User Model (models/User.js)
+- Add role field with enum ['user', 'admin'], default 'user'
 
-**No further changes required.**
+### 2. ✅ Update Login Response (controllers/authController.js)
+- Include user.role in login response
+
+### 3. ✅ Create Authorization Middleware (middleware/authorize.js)
+- Higher-order function authorize(...allowedRoles)
+
+### 4. ✅ Create Analytics Routes (routes/analytics.js)
+- GET /api/analytics/top-artists (admin only)
+- GET /api/analytics/most-active-users (admin only)
+
+### 5. ✅ Mount Analytics Routes (server.js)
+- app.use('/api/analytics', analyticsRoutes);
+
+## Post-Implementation Testing:
+- ✅ All files updated successfully
+- [ ] Create admin user (MongoDB shell: db.users.updateOne({_id: ObjectId('...')}, {$set: {role: 'admin'}}))
+- [ ] Test login responses include role
+- [ ] Test /api/analytics/top-artists:
+  | No token | 401 |
+  | User token | 403 |
+  | Admin token | 200 |
+- [ ] Restart server: cd server && npm run dev
+- [ ] Verify no breaking changes to existing auth/posts routes
 

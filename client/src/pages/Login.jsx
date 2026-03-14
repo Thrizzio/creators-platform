@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/useAuth';
+import api from '../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -49,27 +51,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // For protected endpoints, send: Authorization: Bearer <token>
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Login failed');
-        setLoading(false);
-        return;
-      }
+      const data = await api.post('/api/auth/login', { email, password });
 
       login(data.user, data.token);
+      toast.success('Login successful');
       navigate('/dashboard', { replace: true });
-    } catch {
-      setError('Unable to connect to the server');
+    } catch (requestError) {
+      const message = requestError.response?.data?.message || 'Something went wrong';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
