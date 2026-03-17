@@ -11,6 +11,7 @@ export const createPost = async (req, res, next, io) => {
     const {
       title,
       content,
+      coverImage,
       category,
       status,
     } = req.body;
@@ -26,6 +27,7 @@ export const createPost = async (req, res, next, io) => {
     const post = await Post.create({
       title: title.trim(),
       content: content.trim(),
+      coverImage: coverImage || null,
       category: category?.trim() || '',
       status: status || 'draft',
       author: req.user._id,

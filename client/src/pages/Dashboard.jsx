@@ -127,6 +127,13 @@ const Dashboard = () => {
         <div style={postListStyle}>
           {posts.map((post) => (
             <article key={post._id} style={postCardStyle}>
+              {post.coverImage ? (
+                <img
+                  src={post.coverImage}
+                  alt={`Cover image for ${post.title}`}
+                  style={coverImageStyle}
+                />
+              ) : null}
               <h3 style={postTitleStyle}>{post.title}</h3>
               <p style={postContentStyle}>{post.content}</p>
               {post.category ? <p style={metaStyle}>Category: {post.category}</p> : null}
@@ -233,6 +240,14 @@ const postCardStyle = {
   border: '1px solid var(--border-color)',
   borderRadius: '0.75rem',
   padding: '1rem',
+};
+
+const coverImageStyle = {
+  width: '100%',
+  maxHeight: '200px',
+  objectFit: 'cover',
+  borderRadius: '0.5rem',
+  marginBottom: '0.75rem',
 };
 
 const postTitleStyle = {

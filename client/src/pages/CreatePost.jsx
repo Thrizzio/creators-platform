@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import ImageUpload from '../components/common/ImageUpload';
 import api from '../services/api';
 
 const CreatePost = () => {
@@ -10,10 +11,32 @@ const CreatePost = () => {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('draft');
-  const [isSaving, setIsSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState(null);
+  const [uploadError, setUploadError] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (event) => {
+  const handleUpload = async (formData) => {
+    setUploading(true);
+    setUploadError('');
+
+    try {
+      const response = await api.post('/api/upload', formData);
+      setCoverImageUrl(response.url);
+      toast.success('Image uploaded successfully!');
+      return response.url;
+    } catch (requestError) {
+      const message = requestError.response?.data?.message || 'Image upload failed';
+      setUploadError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePostSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
@@ -24,24 +47,31 @@ const CreatePost = () => {
       return;
     }
 
-    setIsSaving(true);
+    setSubmitting(true);
 
     try {
       await api.post('/api/posts', {
         title: title.trim(),
         content: content.trim(),
+        coverImage: coverImageUrl,
         category: category.trim(),
         status,
       });
 
       toast.success('Post created successfully');
-      navigate('/dashboard', { replace: true });
+      setTitle('');
+      setContent('');
+      setCategory('');
+      setStatus('draft');
+      setCoverImageUrl(null);
+      setUploadError('');
+      navigate('/dashboard');
     } catch (requestError) {
       const message = requestError.response?.data?.message || 'Something went wrong';
       setError(message);
       toast.error(message);
     } finally {
-      setIsSaving(false);
+      setSubmitting(false);
     }
   };
 
@@ -51,7 +81,7 @@ const CreatePost = () => {
         <h1 style={titleStyle}>Create Post</h1>
         {error ? <div style={errorStyle}>{error}</div> : null}
 
-        <form onSubmit={handleSubmit} style={formStyle}>
+        <form onSubmit={handlePostSubmit} style={formStyle}>
           <div style={fieldStyle}>
             <label htmlFor="title" style={labelStyle}>Title</label>
             <input
@@ -75,6 +105,21 @@ const CreatePost = () => {
               rows={8}
             />
           </div>
+
+          <ImageUpload onUpload={handleUpload} disabled={uploading || submitting} />
+          {uploading ? <p style={helperStyle}>Uploading image, please wait...</p> : null}
+          {uploadError ? <p style={uploadErrorStyle}>{uploadError}</p> : null}
+          {coverImageUrl ? (
+            <>
+              <p style={helperStyle}>Image uploaded successfully.</p>
+              <img
+                src={coverImageUrl}
+                alt="Post cover preview"
+                style={previewImageStyle}
+              />
+            </>
+          ) : null}
+          {/* TODO: If a user uploads a new image before creating the post, the previous Cloudinary upload becomes orphaned. */}
 
           <div style={fieldStyle}>
             <label htmlFor="category" style={labelStyle}>Category</label>
@@ -101,8 +146,8 @@ const CreatePost = () => {
             </select>
           </div>
 
-          <button type="submit" style={buttonStyle} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Create Post'}
+          <button type="submit" style={buttonStyle} disabled={uploading || submitting}>
+            {submitting ? 'Saving...' : 'Create Post'}
           </button>
         </form>
       </div>
@@ -153,6 +198,24 @@ const inputStyle = {
 const textareaStyle = {
   ...inputStyle,
   resize: 'vertical',
+};
+
+const helperStyle = {
+  color: 'var(--text-muted)',
+  margin: 0,
+};
+
+const uploadErrorStyle = {
+  color: '#b91c1c',
+  margin: 0,
+};
+
+const previewImageStyle = {
+  width: '100%',
+  maxHeight: '240px',
+  objectFit: 'cover',
+  borderRadius: '0.75rem',
+  border: '1px solid var(--border-color)',
 };
 
 const buttonStyle = {
