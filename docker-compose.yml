@@ -1,14 +1,9 @@
-version: "3.8"
-
 services:
   mongo:
     image: mongo:latest
     container_name: mongodb
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
     volumes:
       # Persist MongoDB data across container restarts.
       - mongo-data:/data/db
@@ -20,13 +15,12 @@ services:
     container_name: creator-platform-server
     ports:
       - "5000:5000"
+    env_file:
+      - ./server/.env
+      - ./server/.env.docker
     environment:
-      # Use the Compose service name as the MongoDB hostname.
-      MONGODB_URI: mongodb://admin:password123@mongo:27017/creator-platform?authSource=admin
-      JWT_SECRET: ${JWT_SECRET}
-      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      # Containers reach MongoDB by the Compose service name, not localhost.
+      MONGODB_URI: mongodb://mongo:27017/creators-platform
     depends_on:
       - mongo
 
