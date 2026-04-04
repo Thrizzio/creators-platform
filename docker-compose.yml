@@ -1,0 +1,38 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # Persist MongoDB data across container restarts.
+      - mongo-data:/data/db
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: creator-platform-server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+      - ./server/.env.docker
+    environment:
+      # Containers reach MongoDB by the Compose service name, not localhost.
+      MONGODB_URI: mongodb://mongo:27017/creators-platform
+    depends_on:
+      - mongo
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: creator-platform-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+volumes:
+  mongo-data:
